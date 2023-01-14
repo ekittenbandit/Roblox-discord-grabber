@@ -1,25 +1,31 @@
-local players = game:GetService("Players"):GetPlayers()
-local found = false
-
-
-for _, player in pairs(players) do
-    local response = syn.request({
+local function addLabel(player)
+    if player == game.Players.LocalPlayer then return end
+    local discord = game:GetService("HttpService"):JSONDecode(syn.request({
         Url = "https://api.ropro.io/getUserInfoTest.php?userid=" .. player.UserId,
         Method = "GET",
-    })
-    local json = response.Body
-    local decodedJson = game:GetService("HttpService"):JSONDecode(json)
-    local discord = decodedJson["discord"]
-
-    if discord ~= nil and discord ~= "" then
-        found = true
-        print(player.Name .. "'s Discord: " .. discord)
+    }).Body)["discord"]
+    if discord then
+        local character = player.Character
+        while not character:FindFirstChild("Head") do wait() end
+        local gui = Instance.new("BillboardGui", character.Head)
+        local textLabel = Instance.new("TextLabel", gui)
+        gui.Size = UDim2.new(5, 0, 1, 0)
+        gui.Adornee = character.Head
+        gui.AlwaysOnTop = true
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.Text = discord
+        textLabel.TextWrapped = true
+        textLabel.TextScaled = true
+        textLabel.BackgroundTransparency = 1
+        textLabel.TextSize = 100
     end
 end
 
-if not found then
-    print("No discords found.")
+local players = game:GetService("Players")
+for _, player in pairs(players:GetPlayers()) do
+    addLabel(player)
 end
 
-
-
+players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(addLabel)
+end)
