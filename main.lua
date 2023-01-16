@@ -1,5 +1,4 @@
 local function addLabel(player)
-    if player == game.Players.LocalPlayer then return end
     local discord = game:GetService("HttpService"):JSONDecode(syn.request({
         Url = "https://api.ropro.io/getUserInfoTest.php?userid=" .. player.UserId,
         Method = "GET",
@@ -23,9 +22,16 @@ end
 
 local players = game:GetService("Players")
 for _, player in pairs(players:GetPlayers()) do
+    player.CharacterAdded:Connect(addLabel)
+    player.CharacterRemoving:Connect(function()
+       addLabel(player)
+    end)
     addLabel(player)
 end
 
 players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(addLabel)
+    player.CharacterRemoving:Connect(function()
+       addLabel(player)
+    end)
 end)
